@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GTA V Military Map — Tactical Operations</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Teko:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">TACTICAL<span class="logo-accent">OPS</span></span>
+    </div>
+    <div class="map-selector">
+      <button class="map-btn active" data-map="satellite" title="Satellite">
+        <span class="btn-icon">🛰</span> SATELLITE
+      </button>
+      <button class="map-btn" data-map="atlas" title="Atlas">
+        <span class="btn-icon">🗺</span> ATLAS
+      </button>
+    </div>
+  </div>
+
+  <div class="topbar-center">
+    <div class="status-bar">
+      <span class="status-dot"></span>
+      <span id="status-text">READY</span>
+      <span class="separator">|</span>
+      <span id="marker-count">0 MARKERS</span>
+      <span class="separator">|</span>
+      <span id="coord-display">X: — Y: —</span>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="toolbar-btn" id="btn-undo" title="Undo (Ctrl+Z)">↩</button>
+    <button class="toolbar-btn" id="btn-clear-all" title="Clear All">🗑</button>
+    <button class="toolbar-btn" id="btn-export" title="Export JSON">💾</button>
+    <button class="toolbar-btn" id="btn-import" title="Import JSON">📂</button>
+    <button class="toolbar-btn" id="btn-screenshot" title="Screenshot">📸</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" />
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<div class="app-layout">
+
+  <!-- LEFT PANEL: TOOLS -->
+  <aside class="panel panel-left" id="panel-tools">
+    <div class="panel-header">
+      <span>TOOLS</span>
+      <button class="panel-toggle" id="toggle-left">◀</button>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-label">MODE</div>
+      <div class="tool-grid">
+        <button class="tool-btn active" data-tool="select" title="Select / Move">
+          <span class="tool-icon">↖</span>
+          <span class="tool-label">SELECT</span>
+        </button>
+        <button class="tool-btn" data-tool="place" title="Place Marker">
+          <span class="tool-icon">📍</span>
+          <span class="tool-label">PLACE</span>
+        </button>
+        <button class="tool-btn" data-tool="draw-line" title="Draw Line">
+          <span class="tool-icon">╱</span>
+          <span class="tool-label">LINE</span>
+        </button>
+        <button class="tool-btn" data-tool="draw-zone" title="Draw Zone">
+          <span class="tool-icon">⬡</span>
+          <span class="tool-label">ZONE</span>
+        </button>
+        <button class="tool-btn" data-tool="measure" title="Measure Distance">
+          <span class="tool-icon">📏</span>
+          <span class="tool-label">MEASURE</span>
+        </button>
+        <button class="tool-btn" data-tool="delete" title="Delete Marker">
+          <span class="tool-icon">✕</span>
+          <span class="tool-label">DELETE</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-label">MARKER TYPE</div>
+      <div class="marker-categories">
+        <!-- FRIENDLY -->
+        <div class="cat-label friendly">▶ FRIENDLY</div>
+        <div class="marker-grid" id="friendly-markers">
+          <button class="marker-select-btn active" data-type="friendly-infantry" data-category="friendly" title="Infantry">
+            <span class="ms-icon">🔵</span><span class="ms-label">Infantry</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-vehicle" data-category="friendly" title="Vehicle">
+            <span class="ms-icon">🚙</span><span class="ms-label">Vehicle</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-armor" data-category="friendly" title="Armor">
+            <span class="ms-icon">🛡</span><span class="ms-label">Armor</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-air" data-category="friendly" title="Air">
+            <span class="ms-icon">✈</span><span class="ms-label">Air</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-hq" data-category="friendly" title="HQ">
+            <span class="ms-icon">⭐</span><span class="ms-label">HQ</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-medic" data-category="friendly" title="Medic">
+            <span class="ms-icon">➕</span><span class="ms-label">Medic</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-sniper" data-category="friendly" title="Sniper">
+            <span class="ms-icon">🎯</span><span class="ms-label">Sniper</span>
+          </button>
+          <button class="marker-select-btn" data-type="friendly-supply" data-category="friendly" title="Supply">
+            <span class="ms-icon">📦</span><span class="ms-label">Supply</span>
+          </button>
+        </div>
+
+        <!-- ENEMY -->
+        <div class="cat-label enemy">▶ ENEMY</div>
+        <div class="marker-grid">
+          <button class="marker-select-btn" data-type="enemy-infantry" data-category="enemy" title="Enemy Infantry">
+            <span class="ms-icon">🔴</span><span class="ms-label">Infantry</span>
+          </button>
+          <button class="marker-select-btn" data-type="enemy-vehicle" data-category="enemy" title="Enemy Vehicle">
+            <span class="ms-icon">🚗</span><span class="ms-label">Vehicle</span>
+          </button>
+          <button class="marker-select-btn" data-type="enemy-armor" data-category="enemy" title="Enemy Armor">
+            <span class="ms-icon">⚠</span><span class="ms-label">Armor</span>
+          </button>
+          <button class="marker-select-btn" data-type="enemy-air" data-category="enemy" title="Enemy Air">
+            <span class="ms-icon">🔺</span><span class="ms-label">Air</span>
+          </button>
+          <button class="marker-select-btn" data-type="enemy-sniper" data-category="enemy" title="Enemy Sniper">
+            <span class="ms-icon">💢</span><span class="ms-label">Sniper</span>
+          </button>
+          <button class="marker-select-btn" data-type="enemy-hq" data-category="enemy" title="Enemy HQ">
+            <span class="ms-icon">☠</span><span class="ms-label">HQ</span>
+          </button>
+        </div>
+
+        <!-- NEUTRAL / TACTICAL -->
+        <div class="cat-label neutral">▶ TACTICAL</div>
+        <div class="marker-grid">
+          <button class="marker-select-btn" data-type="objective" data-category="neutral" title="Objective">
+            <span class="ms-icon">🏁</span><span class="ms-label">Objective</span>
+          </button>
+          <button class="marker-select-btn" data-type="waypoint" data-category="neutral" title="Waypoint">
+            <span class="ms-icon">⬦</span><span class="ms-label">Waypoint</span>
+          </button>
+          <button class="marker-select-btn" data-type="danger" data-category="neutral" title="Danger Zone">
+            <span class="ms-icon">⚡</span><span class="ms-label">Danger</span>
+          </button>
+          <button class="marker-select-btn" data-type="cache" data-category="neutral" title="Cache / Stash">
+            <span class="ms-icon">💰</span><span class="ms-label">Cache</span>
+          </button>
+          <button class="marker-select-btn" data-type="observation" data-category="neutral" title="Observation Post">
+            <span class="ms-icon">👁</span><span class="ms-label">Obs. Post</span>
+          </button>
+          <button class="marker-select-btn" data-type="ambush" data-category="neutral" title="Ambush Point">
+            <span class="ms-icon">⚔</span><span class="ms-label">Ambush</span>
+          </button>
+          <button class="marker-select-btn" data-type="extract" data-category="neutral" title="Extraction Point">
+            <span class="ms-icon">🚁</span><span class="ms-label">Extract</span>
+          </button>
+          <button class="marker-select-btn" data-type="custom" data-category="neutral" title="Custom">
+            <span class="ms-icon">✏</span><span class="ms-label">Custom</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-label">LAYERS</div>
+      <div class="layer-list">
+        <label class="layer-toggle"><input type="checkbox" checked data-layer="friendly"> <span class="lt-dot friendly"></span> Friendly</label>
+        <label class="layer-toggle"><input type="checkbox" checked data-layer="enemy"> <span class="lt-dot enemy"></span> Enemy</label>
+        <label class="layer-toggle"><input type="checkbox" checked data-layer="neutral"> <span class="lt-dot neutral"></span> Tactical</label>
+        <label class="layer-toggle"><input type="checkbox" checked data-layer="lines"> <span class="lt-dot lines"></span> Lines</label>
+        <label class="layer-toggle"><input type="checkbox" checked data-layer="zones"> <span class="lt-dot zones"></span> Zones</label>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MAP CONTAINER -->
+  <main class="map-wrapper" id="map-wrapper">
+    <div class="map-container" id="map-container">
+      <canvas id="overlay-canvas"></canvas>
+      <div id="markers-layer"></div>
+      <img id="map-image" src="GTAV-HD-MAP-satellite__3_.jpg" alt="GTA V Map" draggable="false" />
+    </div>
+
+    <!-- ZOOM CONTROLS -->
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoom-in" title="Zoom In (+)">+</button>
+      <div class="zoom-level" id="zoom-level">100%</div>
+      <button class="zoom-btn" id="zoom-out" title="Zoom Out (-)">−</button>
+      <button class="zoom-btn" id="zoom-fit" title="Fit to Screen">⊡</button>
+    </div>
+
+    <!-- MINIMAP -->
+    <div class="minimap" id="minimap">
+      <canvas id="minimap-canvas"></canvas>
+      <div class="minimap-viewport" id="minimap-viewport"></div>
+    </div>
+
+    <!-- GRID TOGGLE -->
+    <div class="map-overlays">
+      <button class="overlay-btn" id="btn-grid" title="Toggle Grid">GRID</button>
+      <button class="overlay-btn" id="btn-coords" title="Toggle Coord Labels">COORDS</button>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL: MARKERS LIST -->
+  <aside class="panel panel-right" id="panel-markers">
+    <div class="panel-header">
+      <button class="panel-toggle" id="toggle-right">▶</button>
+      <span>MARKERS</span>
+    </div>
+
+    <div class="panel-section">
+      <input type="text" class="search-input" id="marker-search" placeholder="🔍 Search markers..." />
+    </div>
+
+    <div class="panel-section">
+      <div class="section-label">FILTER</div>
+      <div class="filter-btns">
+        <button class="filter-btn active" data-filter="all">ALL</button>
+        <button class="filter-btn friendly" data-filter="friendly">FRIENDLY</button>
+        <button class="filter-btn enemy" data-filter="enemy">ENEMY</button>
+        <button class="filter-btn neutral" data-filter="neutral">TACTICAL</button>
+      </div>
+    </div>
+
+    <div class="markers-list" id="markers-list">
+      <div class="empty-state">
+        <span class="empty-icon">📍</span>
+        <span>No markers yet.<br/>Select PLACE tool and click on map.</span>
+      </div>
+    </div>
+
+    <!-- SELECTED MARKER EDITOR -->
+    <div class="marker-editor" id="marker-editor" style="display:none">
+      <div class="section-label">SELECTED MARKER</div>
+      <div class="editor-field">
+        <label>Label</label>
+        <input type="text" id="edit-label" placeholder="Unit name / designation..." maxlength="40" />
+      </div>
+      <div class="editor-field">
+        <label>Notes</label>
+        <textarea id="edit-notes" placeholder="Tactical notes..." rows="3" maxlength="200"></textarea>
+      </div>
+      <div class="editor-field">
+        <label>Color</label>
+        <div class="color-row">
+          <input type="color" id="edit-color" value="#ffffff" />
+          <span id="edit-coord-display">X: — Y: —</span>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button class="ed-btn save" id="edit-save">SAVE</button>
+        <button class="ed-btn delete" id="edit-delete">DELETE</button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="context-menu" id="context-menu" style="display:none">
+  <div class="cm-item" id="cm-edit">✏ Edit Marker</div>
+  <div class="cm-item" id="cm-duplicate">⎘ Duplicate</div>
+  <div class="cm-separator"></div>
+  <div class="cm-item danger" id="cm-delete">✕ Delete</div>
+</div>
+
+<!-- MODAL: PLACE MARKER -->
+<div class="modal-overlay" id="modal-place" style="display:none">
+  <div class="modal">
+    <div class="modal-title">PLACE MARKER</div>
+    <div class="editor-field">
+      <label>Label (optional)</label>
+      <input type="text" id="place-label" placeholder="Unit / Location name..." maxlength="40" autofocus />
+    </div>
+    <div class="editor-field">
+      <label>Notes (optional)</label>
+      <textarea id="place-notes" placeholder="Tactical notes..." rows="2" maxlength="200"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="ed-btn save" id="place-confirm">PLACE</button>
+      <button class="ed-btn" id="place-cancel">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
